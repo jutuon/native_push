@@ -141,15 +141,9 @@ You only have to add the `Push Notification` Capability.
 
 Please add the
 [native_push.js](https://github.com/Native-Push/native_push/blob/main/example/web/native_push.js)
-to your web folder. You should also add one of
-[native_push_sw.js](https://github.com/Native-Push/native_push/blob/main/example/web/native_push_sw.js) or
-[native_push_sw_non_localize.js](https://github.com/Native-Push/native_push/blob/main/example/web/native_push_sw_non_localize.js)
-to your web folder and rename it to `native_push_sw.js`. The normal
-script should be used if you want to localize the notification on the
-client side. Otherwise you should add the non_localize script. If you
-add the localize script, you also have to add the
-[localization.js](https://github.com/Native-Push/native_push/blob/main/example/web/localization.js)
-and add your localization logic to the `localization` function.
+and
+[native_push_sw.js](https://github.com/Native-Push/native_push/blob/main/example/web/native_push_sw.js)
+to your web folder.
 You don't have to import any of the javascript files in your `index.html`.
 
 ## Example
