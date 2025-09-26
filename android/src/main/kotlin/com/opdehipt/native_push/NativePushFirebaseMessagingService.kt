@@ -1,6 +1,5 @@
 package com.opdehipt.native_push
 
-import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -42,7 +41,6 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
      *
      * @param message The received remote message.
      */
-    @SuppressLint("DiscouragedApi")
     override fun onMessageReceived(message: RemoteMessage) {
         // Retrieve application metadata to get default notification settings
         val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
