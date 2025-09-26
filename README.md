@@ -1,11 +1,11 @@
 # Native Push Plugin
 
-The Native Push Plugin is a Flutter plugin that provides seamless integration of push notifications across different platforms including Android, iOS, macOS, and Web. This plugin allows your Flutter application to receive and handle remote notifications with ease.
+The Native Push Plugin is a Flutter plugin that provides seamless integration of push notifications across different platforms including Android, iOS, and Web. This plugin allows your Flutter application to receive and handle remote notifications with ease.
 
 ## Features
 
 - Supports Firebase Cloud Messaging (FCM) for Android.
-- Supports Apple Push Notification Service (APNs) for iOS and macOS.
+- Supports Apple Push Notification Service (APNs) for iOS.
 - Supports Web Push for web applications.
 - Handles push notifications while the app is in the foreground, background, or terminated.
 - Provides methods to initialize the plugin, register for remote notifications, and retrieve the notification token.
@@ -132,10 +132,6 @@ You also need to the following to your main activity intent filter:
 ### iOS
 
 You have to add the `Push Notification` Capability.
-
-### MacOS
-
-You only have to add the `Push Notification` Capability.
 
 ### Web
 

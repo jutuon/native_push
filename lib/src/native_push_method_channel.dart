@@ -116,7 +116,7 @@ final class MethodChannelNativePush extends NativePushPlatform {
   static final _notificationService = () {
     if (Platform.isAndroid) {
       return NotificationService.fcm;
-    } else if (Platform.isIOS || Platform.isMacOS) {
+    } else if (Platform.isIOS) {
       return NotificationService.apns;
     } else {
       return NotificationService.unknown;

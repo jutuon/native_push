@@ -4,7 +4,6 @@ PODS:
     - Flutter
   - native_push (0.0.1):
     - Flutter
-    - FlutterMacOS
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)

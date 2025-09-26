@@ -1,12 +1,5 @@
-#if os(iOS)
 import Flutter
 import UIKit
-public typealias Application = UIApplication
-#else
-import FlutterMacOS
-import Cocoa
-public typealias Application = NSApplication
-#endif
 import UserNotifications
 
 /// A plugin to handle native push notifications for Flutter applications.
@@ -15,38 +8,14 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     /// Registers the plugin with the Flutter registrar.
     /// - Parameter registrar: The Flutter plugin registrar.
     public static func register(with registrar: FlutterPluginRegistrar) {
-        #if os(iOS)
         let messenger = registrar.messenger()
-        #else
-        let messenger = registrar.messenger
-        #endif
         let channel = FlutterMethodChannel(name: "com.opdehipt.native_push", binaryMessenger: messenger)
         let instance = NativePushPlugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
-        #if os(macOS)
-        NativePushPlugin.channel = channel
-        #endif
         UNUserNotificationCenter.current().delegate = instance
     }
 
-    #if os(macOS)
-    private static var channel: FlutterMethodChannel?
-
-    /// Static method to handle new device token registration.
-    /// - Parameter deviceToken: The device token for push notifications.
-    public static func new(deviceToken: Data) {
-        if let channel {
-            new(deviceToken: deviceToken, channel: channel)
-        }
-    }
-
-    /// Handles the application finish launching event.
-    /// - Parameter notification: The launch notification.
-    public func handleDidFinishLaunching(_ notification: Notification) {
-        applicationStart(launchOptions: notification.userInfo ?? [:])
-    }
-    #else
     /// Handles the application finish launching event.
     /// - Parameters:
     ///   - application: The application instance.
@@ -56,7 +25,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         applicationStart(launchOptions: launchOptions)
         return true
     }
-    #endif
 
     /// Handles new device token registration and sends it to Flutter.
     /// - Parameters:
@@ -102,9 +70,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             do {
                 switch call.method {
                 case "initialize":
-                    #if os(macOS)
-                    await initialize()
-                    #endif
                     result("")
                 case "getInitialNotification":
                     result(initialNotification)
@@ -121,14 +86,11 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         }
     }
 
-    #if os(macOS)
-    @objc
-    #endif
     /// Called when the application successfully registers for remote notifications.
     /// - Parameters:
     ///   - application: The application instance.
     ///   - deviceToken: The device token for push notifications.
-    public func application(_ application: Application, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NativePushPlugin.new(deviceToken: deviceToken, channel: channel)
     }
 
@@ -138,7 +100,7 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     ///   - notification: The notification to be presented.
     /// - Returns: The notification presentation options.
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        if #available(iOS 14.0, macOS 11.0, *) {
+        if #available(iOS 14.0, *) {
             [.banner, .sound]
         } else {
             [.alert, .sound]
@@ -156,12 +118,7 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     /// Handles the application start event and processes any launch options.
     /// - Parameter launchOptions: The launch options.
     private func applicationStart(launchOptions: [AnyHashable : Any]) {
-        #if os(iOS)
-        let key = UIApplication.LaunchOptionsKey.remoteNotification
-        #else
-        let key = NSApplication.launchUserNotificationUserInfoKey
-        #endif
-        if let notification = launchOptions[key] as? [AnyHashable: Any] {
+        if let notification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
             initialNotification = NativePushPlugin.transform(notification: notification)
         }
     }
@@ -175,27 +132,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         userInfo.removeValue(forKey: "native_push_image")
         return userInfo
     }
-
-    #if os(macOS)
-    /// Initializes the plugin on macOS and swaps method implementations.
-    private func initialize() async {
-        await MainActor.run {
-            let appDelegate = NSApplication.shared.delegate
-            let appDelegateClass: AnyClass? = object_getClass(appDelegate)
-
-            let originalSelector = #selector(NSApplicationDelegate.application(_:didRegisterForRemoteNotificationsWithDeviceToken:))
-            let swizzledSelector = #selector(NativePushPlugin.self.application(_:didRegisterForRemoteNotificationsWithDeviceToken:))
-
-            if let swizzledMethod = class_getInstanceMethod(NativePushPlugin.self, swizzledSelector) {
-                if let originalMethod = class_getInstanceMethod(appDelegateClass, originalSelector) {
-                    method_exchangeImplementations(originalMethod, swizzledMethod)
-                } else {
-                    class_addMethod(appDelegateClass, swizzledSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod))
-                }
-            }
-        }
-    }
-    #endif
 
     /// Registers the application for remote notifications.
     /// - Parameter arguments: The arguments from Flutter specifying notification options.
@@ -219,11 +155,9 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                 case "sound":
                     optionPresent = status.soundSetting == .enabled
                     option = .sound
-                #if os(iOS)
                 case "carPlay":
                     optionPresent = status.carPlaySetting == .enabled
                     option = .carPlay
-                #endif
                 case "criticalAlert":
                     optionPresent = status.criticalAlertSetting == .enabled
                     option = .criticalAlert
@@ -245,7 +179,7 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             }
         }
 
-        await Application.shared.registerForRemoteNotifications()
+        await UIApplication.shared.registerForRemoteNotifications()
         switch status.authorizationStatus {
         case .denied:
             return false
