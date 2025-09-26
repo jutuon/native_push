@@ -133,19 +133,6 @@ You also need to the following to your main activity intent filter:
 
 You have to add the `Push Notification` Capability.
 
-If you want to support images in your notification, you also have to add
-the `Background Modes` Capability and check `Remote Notifications`.
-You also have to add `Notification Service Extension` to your app and
-replace the code with the following:
-```swift
-import NativePushNotificationService
-
-final class NotificationService: NativePushNotificationService {}
-```
-The `NativePushNotificationService` can be imported via the
-`Swift Package Manager` from
-[here](https://github.com/Native-Push/native_push_notification_service).
-
 ### MacOS
 
 You only have to add the `Push Notification` Capability.
