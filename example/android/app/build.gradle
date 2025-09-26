@@ -25,7 +25,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.opdehipt.native_push_example"
     compileSdk flutter.compileSdkVersion
-    ndkVersion "26.1.10909125"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
