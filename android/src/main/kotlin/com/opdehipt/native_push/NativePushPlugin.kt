@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -41,6 +42,7 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
 
   companion object {
     private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
+    private const val TAG = "NativePushPlugin"
     private var channel: MethodChannel? = null
     internal var mainActivityClass: Class<out Activity>? = null
       private set
@@ -218,11 +220,30 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
   private suspend fun initialize(params: Map<String, Any>) {
     withContext(Dispatchers.Main) {
       if (FirebaseApp.getApps(context).isEmpty()) {
-        val firebaseOptions = params["firebaseOptions"] as Map<String, String>
+        val firebaseOptions = params["firebaseOptions"] as? Map<*, *>
+        if (firebaseOptions == null) {
+          Log.e(TAG, "firebaseOptions is not Map")
+          throw IllegalArgumentException()
+        }
+        val projectId = firebaseOptions["projectId"] as? String
+        val applicationId = firebaseOptions["applicationId"] as? String
+        val apiKey = firebaseOptions["apiKey"] as? String
+        if (projectId == null) {
+          Log.e(TAG, "projectId is not String")
+          throw IllegalArgumentException()
+        }
+        if (applicationId == null) {
+          Log.e(TAG, "applicationId is not String")
+          throw IllegalArgumentException()
+        }
+        if (apiKey == null) {
+          Log.e(TAG, "apiKey is not String")
+          throw IllegalArgumentException()
+        }
         val options = FirebaseOptions.Builder()
-          .setProjectId(firebaseOptions["projectId"])
-          .setApplicationId(firebaseOptions["applicationId"]!!)
-          .setApiKey(firebaseOptions["apiKey"]!!)
+          .setProjectId(projectId)
+          .setApplicationId(applicationId)
+          .setApiKey(apiKey)
           .build()
         Firebase.initialize(context, options)
       }
