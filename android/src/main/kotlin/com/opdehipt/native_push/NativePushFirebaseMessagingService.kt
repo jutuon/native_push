@@ -23,11 +23,6 @@ import java.util.UUID
 open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
 
     /**
-     * The notification channel ID for this service.
-     */
-    protected open val notificationChannelId = "native_push_notification_channel"
-
-    /**
      * Called when a new token for the default Firebase project is generated.
      *
      * @param token The new token.
