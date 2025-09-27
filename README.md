@@ -46,7 +46,6 @@ void main() async {
       'messagingSenderId': 'YOUR_MESSAGING_SENDER_ID',
       'applicationId': 'YOUR_APP_ID',
     },
-    useDefaultNotificationChannel: true,
   );
 
   runApp(MyApp());
@@ -112,16 +111,11 @@ For Android, ensure that you have add the following metadata to your application
 
 ```xml
 <meta-data
-    android:name="com.google.firebase.messaging.default_notification_channel_id"
-    android:value="native_push_notification_channel" />
-<meta-data
     android:name="com.google.firebase.messaging.default_notification_icon"
     android:resource="@android:drawable/ic_input_add" />
 ```
 
-You can only use `native_push_notification_channel` if you set
-`useDefaultNotificationChannel` in initialize to true. Otherwise you have
-to create and specify your own notification channel.
+You need to create and specify your own notification channels for notifications.
 
 You also need to the following to your main activity intent filter:
 

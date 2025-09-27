@@ -18,14 +18,9 @@ final class NativePush {
   /// Initializes the push notification service.
   ///
   /// [firebaseOptions] - Optional configuration for Firebase.
-  /// [useDefaultNotificationChannel] - Whether to use the default notification channel.
   /// Returns a Future that completes when initialization is done.
-  Future<void> initialize(
-          {final Map<String, String>? firebaseOptions,
-          final bool useDefaultNotificationChannel = false}) =>
-      NativePushPlatform.instance.initialize(
-          firebaseOptions: firebaseOptions,
-          useDefaultNotificationChannel: useDefaultNotificationChannel);
+  Future<void> initialize({final Map<String, String>? firebaseOptions}) =>
+      NativePushPlatform.instance.initialize(firebaseOptions: firebaseOptions);
 
   /// Gets the initial notification data if the app was opened from a notification.
   ///

@@ -22,11 +22,8 @@ final class MethodChannelNativePush extends NativePushPlatform {
   /// Initializes the push notification service.
   ///
   /// [firebaseOptions] - Configuration options for Firebase.
-  /// [useDefaultNotificationChannel] - Whether to use the default notification channel.
   @override
-  Future<void> initialize(
-      {required final Map<String, String>? firebaseOptions,
-      required final bool useDefaultNotificationChannel}) async {
+  Future<void> initialize({required final Map<String, String>? firebaseOptions}) async {
     // Sets up a method call handler to listen for method calls from the native platform.
     methodChannel.setMethodCallHandler((final call) async {
       switch (call.method) {
@@ -48,7 +45,6 @@ final class MethodChannelNativePush extends NativePushPlatform {
     // Invokes the initialize method on the native platform.
     await methodChannel.invokeMethod('initialize', {
       'firebaseOptions': firebaseOptions,
-      'useDefaultNotificationChannel': useDefaultNotificationChannel
     });
   }
 

@@ -7,9 +7,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 final class MockNativePushPlatform extends NativePushPlatform
     with MockPlatformInterfaceMixin {
   @override
-  Future<void> initialize(
-      {required final Map<String, String>? firebaseOptions,
-      required final bool useDefaultNotificationChannel}) async {}
+  Future<void> initialize({required final Map<String, String>? firebaseOptions}) async {}
 
   @override
   Future<Map<String, String>?> initialNotification() async => null;

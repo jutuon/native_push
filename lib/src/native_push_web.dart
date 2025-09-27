@@ -33,9 +33,7 @@ final class NativePushWeb extends NativePushPlatform {
   final _notificationStreamController = StreamController<Map<String, String>>();
 
   @override
-  Future<void> initialize(
-      {required final Map<String, String>? firebaseOptions,
-      required final bool useDefaultNotificationChannel}) async {
+  Future<void> initialize({required final Map<String, String>? firebaseOptions}) async {
     // Initializes the native push notification system.
     final script = web.window.document.createElement('script')
         as web.HTMLScriptElement

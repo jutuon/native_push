@@ -39,11 +39,8 @@ abstract base class NativePushPlatform extends PlatformInterface {
   /// Initializes the push notification service.
   ///
   /// [firebaseOptions] - Configuration options for Firebase.
-  /// [useDefaultNotificationChannel] - Whether to use the default notification channel.
   /// This method should be implemented by the platform-specific subclass.
-  Future<void> initialize(
-      {required final Map<String, String>? firebaseOptions,
-      required final bool useDefaultNotificationChannel});
+  Future<void> initialize({required final Map<String, String>? firebaseOptions});
 
   /// Gets the initial notification if the app was opened from a notification.
   ///
