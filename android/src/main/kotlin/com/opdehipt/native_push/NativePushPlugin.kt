@@ -1,17 +1,11 @@
 package com.opdehipt.native_push
 
-import android.Manifest
 import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -24,24 +18,19 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Plugin class for handling native push notifications in a Flutter application.
  */
-class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
   companion object {
-    private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
     private const val TAG = "NativePushPlugin"
     private var channel: MethodChannel? = null
     internal var mainActivityClass: Class<out Activity>? = null
@@ -91,7 +80,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
   private lateinit var channel: MethodChannel
   private lateinit var context: Context
   private var activity: Activity? = null
-  private var continuation: Continuation<Boolean>? = null
 
   /**
    * Called when the plugin is attached to the Flutter engine.
@@ -120,7 +108,7 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
             result.success(null)
           }
           "getInitialNotification" -> result.success(getInitialNotification())
-          "registerForRemoteNotification" -> result.success(registerForRemoteNotification())
+          "registerForRemoteNotification" -> result.success(true)
           "getNotificationToken" -> result.success(getNotificationToken())
           else -> result.notImplemented()
         }
@@ -141,24 +129,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
   }
 
   /**
-   * Handles the result of a permission request.
-   *
-   * @param code The request code.
-   * @param permissions The requested permissions.
-   * @param grantResults The grant results for the corresponding permissions.
-   * @return True if the request code matches, false otherwise.
-   */
-  override fun onRequestPermissionsResult(code: Int, permissions: Array<out String>, grantResults: IntArray) =
-    when (code) {
-      NOTIFICATION_PERMISSION_REQUEST_CODE -> {
-        continuation?.resume(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-        continuation = null
-        true
-      }
-      else -> false
-    }
-
-  /**
    * Called when the plugin is attached to an activity.
    *
    * @param binding The binding that provides the activity context.
@@ -170,7 +140,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
       newNotification(it)
       false
     }
-    binding.addRequestPermissionsResultListener(this)
   }
 
   /**
@@ -241,45 +210,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
    * @return A map containing the initial notification data.
    */
   private fun getInitialNotification(): Map<String, String>? = parseNotification(activity?.intent)
-
-  /**
-   * Registers for remote notifications, requesting permissions if necessary.
-   *
-   * @return True if registration was successful, false otherwise.
-   */
-  private suspend fun registerForRemoteNotification() =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      val status = ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-      when (status) {
-        PackageManager.PERMISSION_GRANTED -> {
-          true
-        }
-        PackageManager.PERMISSION_DENIED -> {
-          false
-        }
-        else -> {
-          val activity = activity
-          if (activity == null) {
-            false
-          }
-          else {
-            ActivityCompat.requestPermissions(
-              activity,
-              arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-              NOTIFICATION_PERMISSION_REQUEST_CODE,
-            )
-            withContext(Dispatchers.IO) {
-              suspendCoroutine { continuation ->
-                this@NativePushPlugin.continuation = continuation
-              }
-            }
-          }
-        }
-      }
-    }
-    else {
-      true
-    }
 
   /**
    * Retrieves the current FCM notification token.

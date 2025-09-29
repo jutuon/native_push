@@ -116,6 +116,8 @@ For Android, ensure that you have add the following metadata to your application
 ```
 
 You need to create and specify your own notification channels for notifications.
+Also enable notification permission using another library so that notifications
+will be displayed.
 
 ### iOS
 
