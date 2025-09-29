@@ -63,27 +63,26 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
         )
             .setAutoCancel(true)
 
-        // Define the intent that will be triggered when the user taps the notification
-        val mainActivityClass = NativePushPlugin.mainActivityClass
-        if (mainActivityClass != null) {
-            val intent = Intent(this, mainActivityClass)
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.putExtra("native_push_data", JSONObject(message.data as Map<*, *>).toString())
-            val requestCode = if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
-                intent.identifier = message.messageId ?: UUID.randomUUID().toString()
-                0
-            }
-            else {
-                (message.messageId ?: UUID.randomUUID().toString()).hashCode()
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                this,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-            notificationBuilder.setContentIntent(pendingIntent)
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+        if (intent == null) {
+            logError("Intent is null")
+            return
         }
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        intent.putExtra("native_push_data", JSONObject(message.data as Map<*, *>).toString())
+        val requestCode = if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
+            intent.identifier = message.messageId ?: UUID.randomUUID().toString()
+            0
+        } else {
+            (message.messageId ?: UUID.randomUUID().toString()).hashCode()
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE,
+        )
+        notificationBuilder.setContentIntent(pendingIntent)
 
         notificationBuilder.setContentTitle(title)
         message.data["body"].let { notificationBuilder.setContentText(it) }

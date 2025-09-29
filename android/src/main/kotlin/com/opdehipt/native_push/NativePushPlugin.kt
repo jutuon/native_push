@@ -33,8 +33,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
   companion object {
     private const val TAG = "NativePushPlugin"
     private var channel: MethodChannel? = null
-    internal var mainActivityClass: Class<out Activity>? = null
-      private set
 
     /**
      * Passes the new notification token to the Flutter side.
@@ -135,7 +133,6 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
    */
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
-    mainActivityClass = activity?.javaClass
     binding.addOnNewIntentListener {
       newNotification(it)
       false
