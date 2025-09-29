@@ -1,26 +1,26 @@
 package com.opdehipt.native_push
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.res.ResourcesCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONObject
-import java.net.URL
 import java.util.UUID
 
 /**
  * Service for handling Firebase push notifications.
  */
 open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
+    companion object {
+        private const val TAG = "NativePushService"
+    }
 
     /**
      * Called when a new token for the default Firebase project is generated.
@@ -37,15 +37,29 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
      * @param message The received remote message.
      */
     override fun onMessageReceived(message: RemoteMessage) {
-        // Retrieve application metadata to get default notification settings
-        val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-        val defaultNotificationChannel = applicationInfo.metaData
-            .getString("com.google.firebase.messaging.default_notification_channel_id")!!
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
 
-        // Build the notification using NotificationCompat
+        val id = message.data["id"]?.toIntOrNull()
+        if (id == null) {
+            logError("Notification ID not found")
+            return
+        }
+
+        val title = message.data["title"]
+        if (title == null) {
+            notificationManager?.cancel(id)
+            return
+        }
+
+        val channel = message.data["channel"]
+        if (channel == null) {
+            logError("Notification channel not found")
+            return
+        }
+
         val notificationBuilder = NotificationCompat.Builder(
             this,
-            message.notification?.channelId ?: defaultNotificationChannel,
+            channel,
         )
             .setAutoCancel(true)
 
@@ -72,73 +86,26 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
             notificationBuilder.setContentIntent(pendingIntent)
         }
 
-        // Set notification sound
-        val sound = message.notification?.sound
-        val soundUri = if (sound != null) {
-            Uri.parse("android.resource://$packageName/$sound")
-        }
-        else {
-            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        }
-        notificationBuilder.setSound(soundUri)
-
-        // Set notification priority based on Android version
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.N) {
-            notificationBuilder.setPriority(
-                message.notification?.notificationPriority ?: NotificationManager.IMPORTANCE_DEFAULT
-            )
-        }
-        else {
-            notificationBuilder.setPriority(
-                message.notification?.notificationPriority ?: Notification.PRIORITY_DEFAULT
-            )
-        }
-
-        // Set notification title with localization support
-        val localizedTitle = message.notification?.titleLocalizationKey
-        val title = if (localizedTitle != null) {
-            getString(
-                resources.getIdentifier(localizedTitle, "string", packageName),
-                message.notification?.titleLocalizationArgs,
-            )
-        }
-        else {
-            message.notification?.title
-        }
         notificationBuilder.setContentTitle(title)
+        message.data["body"].let { notificationBuilder.setContentText(it) }
 
-        // Set notification body with localization support
-        val bodyTitle = message.notification?.bodyLocalizationKey
-        val body = if (bodyTitle != null) {
-            getString(
-                resources.getIdentifier(bodyTitle, "string", packageName),
-                message.notification?.bodyLocalizationArgs,
-            )
-        }
-        else {
-            message.notification?.body
-        }
-        notificationBuilder.setContentText(body)
-
-        // Set notification icon
-        val icon = message.notification?.icon
-        if (icon != null) {
-            notificationBuilder.setSmallIcon(resources.getIdentifier(icon, "drawable", packageName))
-        }
-        else {
-            notificationBuilder.setSmallIcon(applicationInfo.metaData.getInt("com.google.firebase.messaging.default_notification_icon"))
+        // Retrieve application metadata to get default notification settings
+        val metadataInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        val iconResource = metadataInfo.metaData.getInt("com.google.firebase.messaging.default_notification_icon")
+        if (iconResource == ResourcesCompat.ID_NULL) {
+            // Fallback to launcher icon
+            notificationBuilder.setSmallIcon(applicationInfo.icon)
+        } else {
+            notificationBuilder.setSmallIcon(iconResource)
         }
 
-        // Set large notification icon if available
-        val imageUrl = message.notification?.imageUrl
-        if (imageUrl != null) {
-            val image = BitmapFactory.decodeStream(URL(imageUrl.toString()).openConnection().getInputStream())
-            notificationBuilder.setLargeIcon(image)
-        }
+        notificationManager?.notify(id, notificationBuilder.build())
+    }
 
-        // Get the NotificationManager service and display the notification
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
-        val notificationId = UUID.randomUUID().hashCode()
-        notificationManager?.notify(notificationId, notificationBuilder.build())
+    private fun logError(message: String) {
+        // Include package name to log message as it is missing
+        // from logcat when data message arrives when app process
+        // is not running.
+        Log.e(TAG, "$message, package: $packageName")
     }
 }
