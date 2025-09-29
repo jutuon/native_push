@@ -117,12 +117,6 @@ For Android, ensure that you have add the following metadata to your application
 
 You need to create and specify your own notification channels for notifications.
 
-You also need to the following to your main activity intent filter:
-
-```xml
-<action android:name="com.opdehipt.native_push.PUSH"/>
-```
-
 ### iOS
 
 You have to add the `Push Notification` Capability.
