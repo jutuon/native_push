@@ -64,7 +64,7 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
      * @param intent The intent containing notification data.
      */
     private fun newNotification(intent: Intent) {
-      val data = parseNotification(intent)
+      val data = parseNotification(intent) ?: return
       channel?.invokeMethod("newNotification", data)
     }
 
@@ -74,31 +74,16 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
      * @param intent The intent containing notification data.
      * @return A map containing the notification data.
      */
-    private fun parseNotification(intent: Intent?): Map<String, String> {
-      val keys = (intent?.extras?.keySet() ?: emptyList())
-      return if (keys.contains("native_push_data")) {
-        val dataString = intent?.extras?.getString("native_push_data")
-        val data = mutableMapOf<String, String>()
-        if (dataString != null) {
-          val jsonObject = JSONObject(dataString)
-          val jsonKeys = jsonObject.keys()
-          for (key in jsonKeys) {
-            val value = jsonObject.getString(key)
-            data[key] = value
-          }
-        }
-        data
+    private fun parseNotification(intent: Intent?): Map<String, String>? {
+      val dataString = intent?.extras?.getString("native_push_data") ?: return null
+      val data = mutableMapOf<String, String>()
+      val jsonObject = JSONObject(dataString)
+      val jsonKeys = jsonObject.keys()
+      for (key in jsonKeys) {
+        val value = jsonObject.getString(key)
+        data[key] = value
       }
-      else {
-        val filteredKeys = keys
-          .filterNot { it.startsWith("google") || it.startsWith("gcm") || it in listOf("from", "collapse_key") }
-        val data = mutableMapOf<String, String>()
-        for (key in filteredKeys) {
-          val value = intent?.extras?.getString(key) ?: continue
-          data[key] = value
-        }
-        data
-      }
+      return data
     }
   }
 
@@ -255,7 +240,7 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
    *
    * @return A map containing the initial notification data.
    */
-  private fun getInitialNotification(): Map<String, String> = parseNotification(activity?.intent)
+  private fun getInitialNotification(): Map<String, String>? = parseNotification(activity?.intent)
 
   /**
    * Registers for remote notifications, requesting permissions if necessary.
