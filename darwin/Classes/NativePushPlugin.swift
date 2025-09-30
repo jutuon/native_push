@@ -22,34 +22,10 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     ///   - launchOptions: The launch options.
     /// - Returns: A boolean indicating successful launch.
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
-        applicationStart(launchOptions: launchOptions)
+        if let notification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
+            initialNotification = NativePushPlugin.transform(notification: notification)
+        }
         return true
-    }
-
-    /// Handles new device token registration and sends it to Flutter.
-    /// - Parameters:
-    ///   - deviceToken: The device token for push notifications.
-    ///   - channel: The Flutter method channel.
-    private static func new(deviceToken: Data, channel: FlutterMethodChannel) {
-        let token = deviceToken.map { data in String(format: "%02.2hhx", data) }.joined()
-        UserDefaults.standard.setValue(token, forKey: "native_push_remoteNotificationDeviceToken")
-        Task {
-            await MainActor.run {
-                channel.invokeMethod("newNotificationToken", arguments: token)
-            }
-        }
-    }
-
-    /// Handles new notifications and sends them to Flutter.
-    /// - Parameters:
-    ///   - notification: The received notification.
-    ///   - channel: The Flutter method channel.
-    private static func new(notification: UNNotification, channel: FlutterMethodChannel) {
-        Task {
-            await MainActor.run {
-                channel.invokeMethod("newNotification", arguments: transform(notification: notification.request.content.userInfo))
-            }
-        }
     }
 
     private let channel: FlutterMethodChannel
@@ -91,7 +67,13 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     ///   - application: The application instance.
     ///   - deviceToken: The device token for push notifications.
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        NativePushPlugin.new(deviceToken: deviceToken, channel: channel)
+        let token = deviceToken.map { data in String(format: "%02.2hhx", data) }.joined()
+        UserDefaults.standard.setValue(token, forKey: "native_push_remoteNotificationDeviceToken")
+        Task {
+            await MainActor.run {
+                channel.invokeMethod("newNotificationToken", arguments: token)
+            }
+        }
     }
 
     /// Called when a notification is about to be presented.
@@ -112,14 +94,13 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     ///   - center: The notification center.
     ///   - response: The notification response.
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        NativePushPlugin.new(notification: response.notification, channel: channel)
-    }
-
-    /// Handles the application start event and processes any launch options.
-    /// - Parameter launchOptions: The launch options.
-    private func applicationStart(launchOptions: [AnyHashable : Any]) {
-        if let notification = launchOptions[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
-            initialNotification = NativePushPlugin.transform(notification: notification)
+        Task {
+            await MainActor.run {
+              channel.invokeMethod(
+                "newNotification",
+                arguments: NativePushPlugin.transform(notification: response.notification.request.content.userInfo)
+              )
+            }
         }
     }
 
