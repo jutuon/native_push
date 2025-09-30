@@ -76,6 +76,10 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         }
     }
 
+    public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NSLog("Failed to register for remote notifications: \(error)")
+    }
+
     /// Called when a notification is about to be presented.
     /// - Parameters:
     ///   - center: The notification center.
