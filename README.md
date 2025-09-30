@@ -121,6 +121,16 @@ will be displayed.
 
 ### iOS
 
+Like with
+[flutter_local_notifications](https://github.com/MaikuB/flutter_local_notifications/tree/master/flutter_local_notifications#-ios-setup)
+library, add the following to application method in AppDelegate.swift:
+
+```
+if #available(iOS 10.0, *) {
+  UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+}
+```
+
 You have to add the `Push Notification` Capability.
 
 ### Web

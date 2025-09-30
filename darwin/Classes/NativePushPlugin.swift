@@ -13,7 +13,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         let instance = NativePushPlugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
-        UNUserNotificationCenter.current().delegate = instance
     }
 
     /// Handles the application finish launching event.
