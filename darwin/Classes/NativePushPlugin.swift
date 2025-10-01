@@ -86,7 +86,7 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
             return;
         }
         if #available(iOS 14.0, *) {
-          completionHandler([.banner, .sound])
+          completionHandler([.list, .banner, .sound])
         } else {
           completionHandler([.alert, .sound])
         }
