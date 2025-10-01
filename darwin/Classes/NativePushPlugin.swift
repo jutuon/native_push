@@ -112,7 +112,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     private static func transform(notification: [AnyHashable: Any]) -> [AnyHashable: Any] {
         var userInfo = notification
         userInfo.removeValue(forKey: "aps")
-        userInfo.removeValue(forKey: "native_push_image")
         return userInfo
     }
 
