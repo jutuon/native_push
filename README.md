@@ -66,7 +66,7 @@ You need to register for remote notifications to get a notification token.
 
 ```dart
 await NativePush.instance.registerForRemoteNotification(
-  options: [NotificationOption.alert, NotificationOption.sound],
+  options: [],
   vapidKey: 'YOUR_VAPID_KEY', // For web push, can be omitted otherwise
 );
 ```
@@ -131,7 +131,8 @@ if #available(iOS 10.0, *) {
 }
 ```
 
-You have to add the `Push Notification` Capability.
+You have to add the `Push Notification` Capability. Also enable notification
+permission using another library so that notifications will be displayed.
 
 ### Web
 

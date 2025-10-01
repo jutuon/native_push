@@ -43,11 +43,7 @@ final class _MyApp extends StatelessWidget {
                   // On button press, register for remote notifications
                   onPressed: () async {
                     await _nativePushPlugin.registerForRemoteNotification(
-                      options: [
-                        NotificationOption.alert,
-                        NotificationOption.badge,
-                        NotificationOption.sound
-                      ],
+                      options: [],
                       vapidKey:
                           'BJ4L7FepzRMspZY/utSAxySfXJVw0THgsWIGV5gausv5mvbXW103EfxQkBlXDYC+Z3nsOduWQNBlJrn6pqdQP3Y=',
                     );

@@ -116,63 +116,11 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     }
 
     /// Registers the application for remote notifications.
-    /// - Parameter arguments: The arguments from Flutter specifying notification options.
+    /// - Parameter arguments: [String]
     /// - Returns: A boolean indicating successful registration.
-    private func registerForRemoteNotification(_ arguments: Any?) async throws -> Bool {
-        let status = await UNUserNotificationCenter.current().notificationSettings()
-
-        var allOptionsPresent = true
-        var options: UNAuthorizationOptions = []
-        if let argumentsList = arguments as? [String] {
-            for argument in argumentsList {
-                let optionPresent: Bool
-                let option: UNAuthorizationOptions?
-                switch argument {
-                case "alert":
-                    optionPresent = status.alertSetting == .enabled
-                    option = .alert
-                case "badge":
-                    optionPresent = status.badgeSetting == .enabled
-                    option = .badge
-                case "sound":
-                    optionPresent = status.soundSetting == .enabled
-                    option = .sound
-                case "carPlay":
-                    optionPresent = status.carPlaySetting == .enabled
-                    option = .carPlay
-                case "criticalAlert":
-                    optionPresent = status.criticalAlertSetting == .enabled
-                    option = .criticalAlert
-                case "providesAppNotificationSettings":
-                    optionPresent = status.providesAppNotificationSettings
-                    option = .providesAppNotificationSettings
-                case "provisional":
-                    optionPresent = true
-                    option = .provisional
-                default:
-                    optionPresent = true
-                    option = nil
-                    break
-                }
-                allOptionsPresent = allOptionsPresent && optionPresent
-                if let option {
-                    options.insert(option)
-                }
-            }
-        }
-
+    private func registerForRemoteNotification(_ arguments: Any?) async -> Bool {
         await UIApplication.shared.registerForRemoteNotifications()
-        switch status.authorizationStatus {
-        case .denied:
-            return false
-        case .authorized:
-            if !allOptionsPresent {
-                fallthrough
-            }
-            return true
-        default:
-            return try await UNUserNotificationCenter.current().requestAuthorization(options: options)
-        }
+        return true;
     }
 
     /// Retrieves the current notification token from user defaults.
