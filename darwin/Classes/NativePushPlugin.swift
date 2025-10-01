@@ -79,24 +79,23 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         NSLog("Failed to register for remote notifications: \(error)")
     }
 
-    /// Called when a notification is about to be presented.
-    /// - Parameters:
-    ///   - center: The notification center.
-    ///   - notification: The notification to be presented.
-    /// - Returns: The notification presentation options.
-    public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        if notification.request.content.userInfo["aps"] == nil {
+            return;
+        }
         if #available(iOS 14.0, *) {
-            [.banner, .sound]
+          completionHandler([.banner, .sound])
         } else {
-            [.alert, .sound]
+          completionHandler([.alert, .sound])
         }
     }
 
-    /// Called when a notification response is received.
-    /// - Parameters:
-    ///   - center: The notification center.
-    ///   - response: The notification response.
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        if response.notification.request.content.userInfo["aps"] == nil {
+            return;
+        }
         Task {
             await MainActor.run {
               channel.invokeMethod(
