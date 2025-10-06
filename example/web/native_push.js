@@ -16,7 +16,7 @@ if (href.includes("#")) {
 
 async function native_push_initializeRemoteNotification(newNotificationCallback) {
     native_push_newNotificationCallback = newNotificationCallback;
-    await navigator.serviceWorker.register('/native_push_sw.js');
+    await navigator.serviceWorker.register('native_push_sw.js');
     navigator.serviceWorker.onmessage = (event) => {
         switch (event.data?.type) {
             case "native_push_newNotification":
