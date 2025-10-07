@@ -38,7 +38,7 @@ async function native_push_registerForRemoteNotification(vapidKey) {
         return bytes;
     }
 
-    const status = await Notification.requestPermission();
+    const status = Notification.permission;
     if (status === 'granted') {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.subscribe({
