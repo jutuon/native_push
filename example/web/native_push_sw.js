@@ -66,7 +66,7 @@ self.onnotificationclick = (event) => {
                         .replace("/", '_')
                         .replace("=", '');
                     // Open a new window/tab with the URL containing the encoded data
-                    await self.clients.openWindow(`/#${dataBase64}`);
+                    await self.clients.openWindow(`/?native_push=${dataBase64}`);
                 }
             }
         }),

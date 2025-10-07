@@ -1,9 +1,8 @@
 let native_push_newNotificationCallback;
 
-const href = location.href;
-if (href.includes("#")) {
-    const parts = href.split("#");
-    const base64InitialNotification = parts[1];
+const url = new URL(location.href);
+const base64InitialNotification = url.searchParams.get('native_push');
+if (base64InitialNotification) {
     const padding = 4 - base64InitialNotification.length % 4;
     native_push_initialNotification = JSON.parse(atob(
         base64InitialNotification
@@ -11,7 +10,8 @@ if (href.includes("#")) {
             .replace("_", '/')
             .padEnd(base64InitialNotification.length + (padding % 4), "=")
     ));
-    history.replaceState(null, "", parts[0])
+    url.searchParams.delete('native_push');
+    history.replaceState(null, "", url.toString());
 }
 
 async function native_push_initializeRemoteNotification(newNotificationCallback) {
