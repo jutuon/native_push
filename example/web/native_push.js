@@ -45,13 +45,7 @@ async function native_push_registerForRemoteNotification(vapidKey) {
             userVisibleOnly: true,
             applicationServerKey: base64ToArray(vapidKey)
         });
-        const json = subscription.toJSON()
-        const payload = {
-            "endpoint": json.endpoint,
-            "p256dh": json.keys["p256dh"],
-            "auth": json.keys["auth"],
-        }
-        window.localStorage.setItem('native_push_token', JSON.stringify(payload));
+        window.localStorage.setItem('native_push_token', JSON.stringify(subscription.toJSON()));
         return true;
     }
     else {
