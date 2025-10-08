@@ -14,14 +14,13 @@ self.onpush = (event) => {
         ...data     // Remaining data to be stored in the notification's data attribute
     } = event.data.json();        // Parse the incoming data as JSON
 
+    const options = { data };
+    if (body != null) options.body = body;
+    if (image != null) options.image = image;
+
     // Ensure that the actions within are completed before the service worker terminates
     event.waitUntil(
-        // Show a notification with the specified title, body, image, and additional data
-        self.registration.showNotification(title, {
-            body,
-            image,
-            data,
-        })
+        self.registration.showNotification(title, options)
     );
 };
 
