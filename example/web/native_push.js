@@ -1,4 +1,4 @@
-let native_push_newNotificationCallback;
+var native_push_newNotificationCallback;
 
 const url = new URL(location.href);
 const base64InitialNotification = url.searchParams.get('native_push');
