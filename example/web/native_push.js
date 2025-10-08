@@ -1,4 +1,5 @@
 var native_push_newNotificationCallback;
+var native_push_abortController;
 
 const url = new URL(location.href);
 const base64InitialNotification = url.searchParams.get('native_push');
@@ -27,7 +28,11 @@ async function native_push_initializeRemoteNotification(newNotificationCallback)
         // Wait for it to become active
         await navigator.serviceWorker.ready;
     }
-    navigator.serviceWorker.onmessage = (event) => {
+    if (native_push_abortController) {
+        native_push_abortController.abort();
+    }
+    native_push_abortController = new AbortController();
+    navigator.serviceWorker.addEventListener('message', (event) => {
         switch (event.data?.type) {
             case "native_push_newNotification":
                 if (native_push_newNotificationCallback) {
@@ -35,7 +40,7 @@ async function native_push_initializeRemoteNotification(newNotificationCallback)
                 }
                 break;
         }
-    }
+    }, { signal: native_push_abortController.signal });
 }
 
 async function native_push_registerForRemoteNotification(vapidKey) {
