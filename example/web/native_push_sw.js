@@ -6,10 +6,13 @@ self.onpush = (event) => {
     let {
         title,                    // Notification title
         body,                     // Notification body text
+        id,                       // Notification ID
         ...data     // Remaining data to be stored in the notification's data attribute
     } = event.data.json();        // Parse the incoming data as JSON
 
-    const options = { data };
+    data.id = id;
+
+    const options = { data, tag: id };
     if (body != null) options.body = body;
 
     // Ensure that the actions within are completed before the service worker terminates
