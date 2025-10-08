@@ -34,12 +34,6 @@ final class NativePushWeb extends NativePushPlatform {
 
   @override
   Future<void> initialize({required final Map<String, String>? firebaseOptions}) async {
-    // Initializes the native push notification system.
-    final script = web.window.document.createElement('script')
-        as web.HTMLScriptElement
-      ..src = 'native_push.js';
-    web.window.document.head?.appendChild(script);
-    await script.onLoad.first;
     await _initialize(_newNotification.toJS).toDart;
   }
 

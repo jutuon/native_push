@@ -1,5 +1,5 @@
-var native_push_newNotificationCallback;
-var native_push_abortController;
+let native_push_newNotificationCallback;
+let native_push_abortController;
 
 const url = new URL(location.href);
 const base64InitialNotification = url.searchParams.get('native_push');

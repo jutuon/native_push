@@ -136,10 +136,9 @@ permission using another library so that notifications will be displayed.
 
 ### Web
 
-Please add the
+Add
 [native_push.js](https://github.com/Native-Push/native_push/blob/main/example/web/native_push.js)
-to your web folder.
-You don't have to import any of the javascript files in your `index.html`.
+to your web folder and the script to `index.html`.
 Also enable notification permission using another library so
 that registerForRemoteNotification function will work.
 
