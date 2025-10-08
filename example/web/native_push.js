@@ -16,7 +16,17 @@ if (base64InitialNotification) {
 
 async function native_push_initializeRemoteNotification(newNotificationCallback) {
     native_push_newNotificationCallback = newNotificationCallback;
-    await navigator.serviceWorker.register('native_push_sw.js', { scope: '/' });
+    if (!('serviceWorker' in navigator)) {
+        throw new Error('Service workers are not supported');
+    }
+    if (!navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+            throw new Error('No service worker is registered');
+        }
+        // Wait for it to become active
+        await navigator.serviceWorker.ready;
+    }
     navigator.serviceWorker.onmessage = (event) => {
         switch (event.data?.type) {
             case "native_push_newNotification":
