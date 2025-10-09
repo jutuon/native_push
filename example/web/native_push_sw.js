@@ -27,12 +27,6 @@ self.oninstall = event => {
     event.waitUntil(self.skipWaiting());
 };
 
-// Event listener for the activation of the service worker
-self.onactivate = (event) => {
-    // Ensures that the service worker takes control of all clients as soon as it activates
-    event.waitUntil(self.clients.claim());
-};
-
 // Event listener for when a notification is clicked
 self.onnotificationclick = (event) => {
     // Close the notification pop-up
