@@ -37,6 +37,7 @@ self.onnotificationclick = (event) => {
         // Fetches all the clients (open windows) controlled by this service worker
         self.clients.matchAll({
             type: "window",
+            includeUncontrolled: true,
         })
         .then(async (clientList) => {
             const data = event.notification.data;
