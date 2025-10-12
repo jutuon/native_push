@@ -7,12 +7,9 @@ self.onpush = (event) => {
         title,                    // Notification title
         body,                     // Notification body text
         id,                       // Notification ID
-        ...data     // Remaining data to be stored in the notification's data attribute
     } = event.data.json();        // Parse the incoming data as JSON
 
-    data.id = id;
-
-    const options = { data, tag: id };
+    const options = { tag: id };
     if (body != null) options.body = body;
 
     // Ensure that the actions within are completed before the service worker terminates
@@ -40,8 +37,9 @@ self.onnotificationclick = (event) => {
             includeUncontrolled: true,
         })
         .then(async (clientList) => {
-            const data = event.notification.data;
-            if (data) {
+            const tag = event.notification.tag;
+            if (tag) {
+                const data = { id: tag };
                 // If there are any open windows
                 if (clientList.length !== 0) {
                     // Focus the first client window
