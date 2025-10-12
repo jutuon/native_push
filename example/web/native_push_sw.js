@@ -9,7 +9,7 @@ self.onpush = (event) => {
         id,                       // Notification ID
     } = event.data.json();        // Parse the incoming data as JSON
 
-    const options = { tag: id };
+    const options = { tag: id, requireInteraction: true };
     if (body != null) options.body = body;
 
     // Ensure that the actions within are completed before the service worker terminates
