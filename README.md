@@ -4,6 +4,8 @@ The Native Push Plugin is a Flutter plugin that provides seamless integration of
 
 ## Features
 
+- **End-to-end encrypted notifications** using AES-128-GCM encryption (Android
+  and iOS).
 - Supports Firebase Cloud Messaging (FCM) for Android.
 - Supports Apple Push Notification Service (APNs) for iOS.
 - Supports Web Push for web applications.
@@ -60,23 +62,45 @@ extract the information from the `google-services.json`.
 cat google-services.json | ./extract_fcm_options.sh <android-bundle-id>
 ```
 
-### Save Encryption Key (Android)
+### Save Encryption Key (Android and iOS)
 
 Before registering for notifications, you must save the encryption key that will be used to decrypt notification payloads. The key must be a Base64-encoded AES-128 key (16 bytes).
+
+**For iOS**: The encryption key must be saved to the App Group shared container so the Notification Service Extension can access it. Use `path_provider_foundation`'s `getApplicationSupportDirectory()` method.
+
+Add `path_provider_foundation` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  path_provider_foundation: ^2.2.0
+```
 
 ```dart
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
 
 Future<void> saveEncryptionKey(String base64Key) async {
-  final directory = await getApplicationDocumentsDirectory();
-  final file = File('${directory.path}/native_push_encryption_key.txt');
-  await file.writeAsString(base64Key);
+  if (Platform.isIOS) {
+    // For iOS, use the App Group container
+    // Replace with your actual App Group identifier
+    final directory = await PathProviderFoundation()
+        .getContainerPath(appGroupIdentifier: 'group.com.yourcompany.yourapp');
+    final file = File('$directory/native_push_encryption_key.txt');
+    await file.writeAsString(base64Key);
+  } else {
+    // Android uses app documents directory
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/native_push_encryption_key.txt');
+    await file.writeAsString(base64Key);
+  }
 }
 
 // Call this during app initialization
 await saveEncryptionKey('YOUR_BASE64_ENCODED_AES128_KEY');
 ```
+
+**Important**: Make sure the App Group identifier in your Dart code matches the one configured in Xcode (see iOS setup section below).
 
 ### Register for Remote Notifications
 
@@ -162,6 +186,39 @@ if #available(iOS 10.0, *) {
 
 You have to add the `Push Notification` Capability. Also enable notification
 permission using another library so that notifications will be displayed.
+
+#### iOS Notification Service Extension Setup
+
+**Step 1: Add Notification Service Extension**
+
+1. Open your iOS project in Xcode (`ios/Runner.xcworkspace`)
+2. File → New → Target → Notification Service Extension
+3. Name it `NotificationService`
+4. Set the language to Swift
+5. Activate the scheme when prompted
+
+**Step 2: Copy Template Code**
+
+1. Copy the template from `darwin/Templates/NotificationService.swift` in this package
+2. Replace the contents of your newly created extension's `NotificationService.swift` file with the template
+3. **IMPORTANT**: Update the `APP_GROUP_IDENTIFIER` constant at the top of the file with your actual App Group identifier
+
+```swift
+// Example: Change this line in the template
+private let APP_GROUP_IDENTIFIER = "group.com.example.app"
+// To your actual App Group identifier:
+private let APP_GROUP_IDENTIFIER = "group.com.yourcompany.yourapp"
+```
+
+**Step 3: Configure App Groups (Required for file sharing)**
+
+1. In Xcode, select your main app target (Runner)
+2. Go to "Signing & Capabilities" tab
+3. Click "+ Capability" and add "App Groups"
+4. Click the "+" button and create a new App Group identifier (e.g., `group.com.yourcompany.yourapp`)
+5. Enable the checkbox next to your newly created App Group
+6. Repeat steps 1-5 for the Notification Service Extension target
+7. Make sure both targets use the **same App Group identifier**
 
 ### Web
 
