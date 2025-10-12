@@ -60,6 +60,24 @@ extract the information from the `google-services.json`.
 cat google-services.json | ./extract_fcm_options.sh <android-bundle-id>
 ```
 
+### Save Encryption Key (Android)
+
+Before registering for notifications, you must save the encryption key that will be used to decrypt notification payloads. The key must be a Base64-encoded AES-128 key (16 bytes).
+
+```dart
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
+Future<void> saveEncryptionKey(String base64Key) async {
+  final directory = await getApplicationDocumentsDirectory();
+  final file = File('${directory.path}/native_push_encryption_key.txt');
+  await file.writeAsString(base64Key);
+}
+
+// Call this during app initialization
+await saveEncryptionKey('YOUR_BASE64_ENCODED_AES128_KEY');
+```
+
 ### Register for Remote Notifications
 
 You need to register for remote notifications to get a notification token.
@@ -70,6 +88,17 @@ await NativePush.instance.registerForRemoteNotification(
   vapidKey: 'YOUR_VAPID_KEY', // For web push, can be omitted otherwise
 );
 ```
+
+### Notification Payload Format (Android and iOS)
+
+All notifications must be sent as encrypted payloads. The notification data should include:
+
+- `encrypted`: Base64-encoded encrypted JSON string containing `title` and optionally `body`
+- `nonce`: Base64-encoded nonce for AES-GCM decryption
+- `id`: Notification ID (unencrypted)
+- `channel`: Notification channel (unencrypted, Android only)
+
+The encryption uses AES-128-GCM with a 128-bit authentication tag.
 
 ### Handling Incoming Notifications
 
