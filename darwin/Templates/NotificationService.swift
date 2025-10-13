@@ -2,12 +2,22 @@ import UserNotifications
 import CryptoKit
 
 /// Notification Service Extension for decrypting push notifications
-///
-/// IMPORTANT: Replace this with your actual App Group identifier
-/// Example: "group.com.yourcompany.yourapp"
-private let APP_GROUP_IDENTIFIER = "group.com.example.app"
-
 class NotificationService: UNNotificationServiceExtension {
+
+    /// App Group identifier constructed from the bundle identifier
+    /// Convention: "group.{BUNDLE_ID}"
+    /// Example: If bundle ID is "com.yourcompany.yourapp", App Group will be "group.com.yourcompany.yourapp"
+    private var appGroupIdentifier: String {
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier else {
+            return "group.unknown"
+        }
+        // Remove the notification service extension suffix if present
+        let suffix = ".NotificationService"
+        let mainBundleId = bundleIdentifier.hasSuffix(suffix)
+            ? String(bundleIdentifier.dropLast(suffix.count))
+            : bundleIdentifier
+        return "group.\(mainBundleId)"
+    }
 
     var contentHandler: ((UNNotificationContent) -> Void)?
     var bestAttemptContent: UNMutableNotificationContent?
@@ -89,7 +99,7 @@ class NotificationService: UNNotificationServiceExtension {
     ///
     /// - Returns: URL to the encryption key file, or nil if not accessible
     private func getEncryptionKeyFileURL() -> URL? {
-        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: APP_GROUP_IDENTIFIER) else {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) else {
             return nil
         }
         return containerURL.appendingPathComponent("native_push_encryption_key.txt")

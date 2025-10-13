@@ -70,14 +70,17 @@ Before registering for notifications, you must save the encryption key that will
 import 'package:native_push/native_push.dart';
 
 // Call this during app initialization
+// Replace 'com.yourcompany.yourapp' with your actual bundle identifier
 await NativePush.instance.saveEncryptionKey(
   'YOUR_BASE64_ENCODED_AES128_KEY',
   appGroupIdentifier: 'group.com.yourcompany.yourapp', // Required on iOS, ignored on Android
 );
 ```
 
-**Important for iOS**: The `appGroupIdentifier` parameter is required on iOS and
-must match the App Group identifier configured in Xcode.
+**Important for iOS**:
+- The `appGroupIdentifier` must follow the convention: `group.{YOUR_BUNDLE_ID}`
+- Example: If your bundle ID is `com.yourcompany.yourapp`, use `group.com.yourcompany.yourapp`
+- This must match the App Group identifier configured in Xcode (see iOS setup section below)
 On Android, this parameter is ignored.
 
 ### Register for Remote Notifications
@@ -179,21 +182,16 @@ permission using another library so that notifications will be displayed.
 
 1. Copy the template from `darwin/Templates/NotificationService.swift` in this package
 2. Replace the contents of your newly created extension's `NotificationService.swift` file with the template
-3. **IMPORTANT**: Update the `APP_GROUP_IDENTIFIER` constant at the top of the file with your actual App Group identifier
 
-```swift
-// Example: Change this line in the template
-private let APP_GROUP_IDENTIFIER = "group.com.example.app"
-// To your actual App Group identifier:
-private let APP_GROUP_IDENTIFIER = "group.com.yourcompany.yourapp"
-```
+**Note**: The template automatically derives the App Group identifier from your bundle ID using the convention `group.{BUNDLE_ID}`. No code changes needed!
 
 **Step 3: Configure App Groups (Required for file sharing)**
 
 1. In Xcode, select your main app target (Runner)
 2. Go to "Signing & Capabilities" tab
 3. Click "+ Capability" and add "App Groups"
-4. Click the "+" button and create a new App Group identifier (e.g., `group.com.yourcompany.yourapp`)
+4. Click the "+" button and create a new App Group identifier following the convention: `group.{YOUR_BUNDLE_ID}`
+   - Example: If your bundle ID is `com.yourcompany.yourapp`, create `group.com.yourcompany.yourapp`
 5. Enable the checkbox next to your newly created App Group
 6. Repeat steps 1-5 for the Notification Service Extension target
 7. Make sure both targets use the **same App Group identifier**
