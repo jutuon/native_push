@@ -143,6 +143,11 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     ///   - appGroupIdentifier: App Group identifier for sharing with Notification Service Extension
     /// - Returns: true if the key was saved successfully
     private func saveEncryptionKey(encryptionKey: String, appGroupIdentifier: String) -> Bool {
+        guard !appGroupIdentifier.isEmpty else {
+            NSLog("App Group identifier is empty")
+            return false
+        }
+
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) else {
             NSLog("Failed to get App Group container URL for identifier: \(appGroupIdentifier)")
             return false
