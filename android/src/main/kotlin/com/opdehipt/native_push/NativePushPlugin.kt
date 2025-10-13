@@ -108,6 +108,15 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
           "getInitialNotification" -> result.success(getInitialNotification())
           "registerForRemoteNotification" -> result.success(true)
           "getNotificationToken" -> result.success(getNotificationToken())
+          "saveEncryptionKey" -> {
+            val args = call.arguments as Map<*, *>
+            val encryptionKey = args["encryptionKey"] as? String
+            if (encryptionKey != null) {
+              result.success(saveEncryptionKey(encryptionKey))
+            } else {
+              result.error("INVALID_ARGUMENT", "encryptionKey is required", null)
+            }
+          }
           else -> result.notImplemented()
         }
       }
@@ -217,4 +226,21 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     withContext(Dispatchers.IO) {
       FirebaseMessaging.getInstance().token.await()
     }
+
+  /**
+   * Saves the encryption key to a file in the app's files directory.
+   *
+   * @param encryptionKey Base64-encoded encryption key.
+   * @return true if the key was saved successfully.
+   */
+  private fun saveEncryptionKey(encryptionKey: String): Boolean {
+    return try {
+      val file = java.io.File(context.filesDir, "native_push_encryption_key.txt")
+      file.writeText(encryptionKey)
+      true
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to save encryption key", e)
+      false
+    }
+  }
 }

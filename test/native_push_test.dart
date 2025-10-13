@@ -28,6 +28,10 @@ final class MockNativePushPlatform extends NativePushPlatform
 
   @override
   Stream<Map<String, String>> get notificationStream => Stream.value({});
+
+  @override
+  Future<bool> saveEncryptionKey(String encryptionKey, {String? appGroupIdentifier}) =>
+    Future.value(false);
 }
 
 void main() {

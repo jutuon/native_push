@@ -62,45 +62,23 @@ extract the information from the `google-services.json`.
 cat google-services.json | ./extract_fcm_options.sh <android-bundle-id>
 ```
 
-### Save Encryption Key (Android and iOS)
+### Save Encryption Key
 
 Before registering for notifications, you must save the encryption key that will be used to decrypt notification payloads. The key must be a Base64-encoded AES-128 key (16 bytes).
 
-**For iOS**: The encryption key must be saved to the App Group shared container so the Notification Service Extension can access it. Use `path_provider_foundation`'s `getApplicationSupportDirectory()` method.
-
-Add `path_provider_foundation` to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  path_provider_foundation: ^2.2.0
-```
-
 ```dart
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:path_provider_foundation/path_provider_foundation.dart';
-
-Future<void> saveEncryptionKey(String base64Key) async {
-  if (Platform.isIOS) {
-    // For iOS, use the App Group container
-    // Replace with your actual App Group identifier
-    final directory = await PathProviderFoundation()
-        .getContainerPath(appGroupIdentifier: 'group.com.yourcompany.yourapp');
-    final file = File('$directory/native_push_encryption_key.txt');
-    await file.writeAsString(base64Key);
-  } else {
-    // Android uses app documents directory
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/native_push_encryption_key.txt');
-    await file.writeAsString(base64Key);
-  }
-}
+import 'package:native_push/native_push.dart';
 
 // Call this during app initialization
-await saveEncryptionKey('YOUR_BASE64_ENCODED_AES128_KEY');
+await NativePush.instance.saveEncryptionKey(
+  'YOUR_BASE64_ENCODED_AES128_KEY',
+  appGroupIdentifier: 'group.com.yourcompany.yourapp', // Required on iOS, ignored on Android
+);
 ```
 
-**Important**: Make sure the App Group identifier in your Dart code matches the one configured in Xcode (see iOS setup section below).
+**Important for iOS**: The `appGroupIdentifier` parameter is required on iOS and
+must match the App Group identifier configured in Xcode.
+On Android, this parameter is ignored.
 
 ### Register for Remote Notifications
 

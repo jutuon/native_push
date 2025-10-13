@@ -79,4 +79,11 @@ final class NativePushWeb extends NativePushPlatform {
   @override
   Stream<Map<String, String>> get notificationStream =>
       _notificationStreamController.stream;
+
+  @override
+  Future<bool> saveEncryptionKey(String encryptionKey, {String? appGroupIdentifier}) async {
+    // Encryption key storage is not supported on web platform
+    // Web notifications are decrypted in the service worker using a different mechanism
+    return false;
+  }
 }

@@ -107,6 +107,20 @@ final class MethodChannelNativePush extends NativePushPlatform {
   Stream<Map<String, String>> get notificationStream =>
       _notificationStreamController.stream;
 
+  /// Saves the encryption key for decrypting push notifications.
+  ///
+  /// [encryptionKey] - Base64-encoded AES-128 encryption key (16 bytes).
+  /// [appGroupIdentifier] - iOS App Group identifier for sharing with Notification Service Extension.
+  ///                        Required on iOS, ignored on Android.
+  /// Returns a Future that resolves to true if the key was saved successfully.
+  @override
+  Future<bool> saveEncryptionKey(String encryptionKey, {String? appGroupIdentifier}) async {
+    return await methodChannel.invokeMethod<bool>('saveEncryptionKey', {
+      'encryptionKey': encryptionKey,
+      'appGroupIdentifier': appGroupIdentifier,
+    }) ?? false;
+  }
+
   // Determines the notification service based on the platform.
   @pragma('vm:platform-const')
   static final _notificationService = () {

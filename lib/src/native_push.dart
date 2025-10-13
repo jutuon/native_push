@@ -56,4 +56,21 @@ final class NativePush {
   /// Each event in the stream is a map containing the notification data.
   Stream<Map<String, String>> get notificationStream =>
       NativePushPlatform.instance.notificationStream;
+
+  /// Saves the encryption key for decrypting push notifications.
+  ///
+  /// [encryptionKey] - Base64-encoded AES-128 encryption key (16 bytes).
+  /// [appGroupIdentifier] - iOS App Group identifier for sharing with Notification Service Extension.
+  ///                        Required on iOS, ignored on Android.
+  /// Returns a Future that resolves to true if the key was saved successfully.
+  ///
+  /// Example:
+  /// ```dart
+  /// await NativePush.instance.saveEncryptionKey(
+  ///   'YOUR_BASE64_ENCODED_KEY',
+  ///   appGroupIdentifier: 'group.com.yourcompany.yourapp', // Required on iOS
+  /// );
+  /// ```
+  Future<bool> saveEncryptionKey(String encryptionKey, {String? appGroupIdentifier}) =>
+      NativePushPlatform.instance.saveEncryptionKey(encryptionKey, appGroupIdentifier: appGroupIdentifier);
 }

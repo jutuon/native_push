@@ -75,4 +75,13 @@ abstract base class NativePushPlatform extends PlatformInterface {
   /// Each event in the stream is a map containing the notification data.
   /// This property should be implemented by the platform-specific subclass.
   Stream<Map<String, String>> get notificationStream;
+
+  /// Saves the encryption key for decrypting push notifications.
+  ///
+  /// [encryptionKey] - Base64-encoded AES-128 encryption key (16 bytes).
+  /// [appGroupIdentifier] - iOS App Group identifier for sharing with Notification Service Extension.
+  ///                        Required on iOS, ignored on Android.
+  /// Returns a Future that resolves to true if the key was saved successfully.
+  /// This method should be implemented by the platform-specific subclass.
+  Future<bool> saveEncryptionKey(String encryptionKey, {String? appGroupIdentifier});
 }

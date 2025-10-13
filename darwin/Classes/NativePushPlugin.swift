@@ -52,6 +52,14 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
                     result(try await registerForRemoteNotification(call.arguments))
                 case "getNotificationToken":
                     result(getNotificationToken())
+                case "saveEncryptionKey":
+                    if let args = call.arguments as? [String: Any],
+                       let encryptionKey = args["encryptionKey"] as? String,
+                       let appGroupIdentifier = args["appGroupIdentifier"] as? String {
+                        result(saveEncryptionKey(encryptionKey: encryptionKey, appGroupIdentifier: appGroupIdentifier))
+                    } else {
+                        result(FlutterError(code: "INVALID_ARGUMENT", message: "encryptionKey and appGroupIdentifier are required", details: nil))
+                    }
                 default:
                     result(FlutterMethodNotImplemented)
                 }
@@ -127,5 +135,27 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     /// - Returns: The current notification token, if available.
     private func getNotificationToken() -> String? {
         UserDefaults.standard.string(forKey: "native_push_remoteNotificationDeviceToken")
+    }
+
+    /// Saves the encryption key to the App Group shared container.
+    /// - Parameters:
+    ///   - encryptionKey: Base64-encoded encryption key
+    ///   - appGroupIdentifier: App Group identifier for sharing with Notification Service Extension
+    /// - Returns: true if the key was saved successfully
+    private func saveEncryptionKey(encryptionKey: String, appGroupIdentifier: String) -> Bool {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) else {
+            NSLog("Failed to get App Group container URL for identifier: \(appGroupIdentifier)")
+            return false
+        }
+
+        let fileURL = containerURL.appendingPathComponent("native_push_encryption_key.txt")
+
+        do {
+            try encryptionKey.write(to: fileURL, atomically: true, encoding: .utf8)
+            return true
+        } catch {
+            NSLog("Failed to save encryption key: \(error)")
+            return false
+        }
     }
 }
