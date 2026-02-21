@@ -222,9 +222,14 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
    *
    * @return The current FCM token.
    */
-  private suspend fun getNotificationToken() =
-    withContext(Dispatchers.IO) {
-      FirebaseMessaging.getInstance().token.await()
+  private suspend fun getNotificationToken(): String? =
+    try {
+      withContext(Dispatchers.IO) {
+        FirebaseMessaging.getInstance().token.await()
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to get FCM token", e)
+      null
     }
 
   /**
