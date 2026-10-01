@@ -76,11 +76,7 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { data in String(format: "%02.2hhx", data) }.joined()
         UserDefaults.standard.setValue(token, forKey: "native_push_remoteNotificationDeviceToken")
-        Task {
-            await MainActor.run {
-                channel.invokeMethod("newNotificationToken", arguments: token)
-            }
-        }
+        channel.invokeMethod("newNotificationToken", arguments: token)
     }
 
     public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
