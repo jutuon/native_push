@@ -100,17 +100,20 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         }
     }
 
-    public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void) {
         if response.notification.request.content.userInfo["aps"] == nil {
-            return;
+            completionHandler()
+            return
         }
-        Task {
-            await MainActor.run {
-              channel.invokeMethod(
+
+        DispatchQueue.main.async {
+            self.channel.invokeMethod(
                 "newNotification",
                 arguments: NativePushPlugin.transform(notification: response.notification.request.content.userInfo)
-              )
-            }
+            )
+            completionHandler()
         }
     }
 
